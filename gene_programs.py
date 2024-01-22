@@ -158,7 +158,7 @@ RUN_NAME="mnist_programs",
                 "Accuracy (top program vs labels)": avg_acc
             }, step=epoch)
 
-
+    wandb.finish()
     model.eval()
     program_scores = model(torch.from_numpy(X).to(device))
     reconst_all = torch.matmul(program_scores, prog_def_tensor)
