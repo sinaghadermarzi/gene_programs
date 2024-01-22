@@ -20,7 +20,8 @@ import torch.nn.functional as F
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import log_loss
 from sklearn.metrics import accuracy_score
-
+from models import geneprog_encoder_linear, geneprog_encoder_MLP
+from datetime import datetime
 
 
 def train_and_encode_for_mnist(
@@ -148,7 +149,6 @@ RUN_NAME="mnist_programs",
 
         if WANDB_LOGGING:
             wandb.log({
-                # "epoch": epoch,
                 "Learning Rate": scheduler.get_last_lr()[0],
                 "Loss (MSE-reconstruction)": avg_loss,
                 "R2 (reconstruction)": avg_r2_score,
@@ -168,3 +168,60 @@ RUN_NAME="mnist_programs",
     torch.save(model.state_dict(), os.path.join(SAVE_DIR, "model.pt"))
 
     return program_scores, reconst_all
+
+
+
+if __name__=="__main__":
+
+    dataset = load_dataset("mnist")
+    dataset.set_format('numpy')
+
+    img1d = np.array([dataset['train'][i]['image'].flatten() for i in range(len(dataset['train']))])
+    labels= dataset['train']['label']
+    img_shape= dataset['train'][0]['image'].shape
+
+    imgs_grouped_by_label = [dataset['train']['image'][labels == i] for i in range(10)]
+    avg_img = [imgs_grouped_by_label[i].mean(axis=0) for i in range(10)]
+    digit_programs = [avg_img[i].flatten() for i in range(10)]
+
+
+
+    datetimestamp = datetime.now().strftime('%Y_%m_%d___%H_%M_%S')
+    gp_encoder_model = geneprog_encoder_linear
+    run_name = f"Linear_{datetimestamp}"
+
+    X_program_scores , X_reconst = train_and_encode_for_mnist(
+
+    encoder_model=gp_encoder_model,
+    X = img1d,
+    program_def = digit_programs,
+    tru_labels = labels,
+    WANDB_LOGGING = True,
+    LEARNING_RATE = 0.0005,
+    WEIGHT_DECAY = 1e-5,
+    N_EPOCHS = 100,
+    BATCH_SIZE = 100,
+    OUTPUT_PREFIX = "./gene_program_runs",
+    RUN_NAME = run_name,
+
+    )
+
+    datetimestamp = datetime.now().strftime('%Y_%m_%d___%H_%M_%S')
+    gp_encoder_model = geneprog_encoder_MLP
+    run_name = f"MLP_{datetimestamp}"
+
+    X_program_scores , X_reconst = train_and_encode_for_mnist(
+
+    encoder_model=gp_encoder_model,
+    X = img1d,
+    program_def = digit_programs,
+    tru_labels = labels,
+    WANDB_LOGGING = True,
+    LEARNING_RATE = 0.0005,
+    WEIGHT_DECAY = 1e-5,
+    N_EPOCHS = 30,
+    BATCH_SIZE = 100,
+    OUTPUT_PREFIX = "./gene_program_runs",
+    RUN_NAME = run_name,
+
+    )
