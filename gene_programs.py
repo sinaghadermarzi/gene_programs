@@ -72,7 +72,7 @@ RUN_NAME="mnist_programs",
     # Initialize WandB
     if WANDB_LOGGING:
         wandb.init(
-            project="gene_program",
+            project="gene_programs",
             entity="sinag",
             name=RUN_NAME
         )
