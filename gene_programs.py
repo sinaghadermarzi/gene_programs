@@ -36,7 +36,7 @@ WEIGHT_DECAY = 1e-5,
 N_EPOCHS = 250,
 BATCH_SIZE = 100,
 OUTPUT_PREFIX = "./gene_program_runs",
-RUN_NAME="mnist_programs",
+RUN_NAME= "mnist_programs",
 
 ):
 
@@ -71,18 +71,18 @@ RUN_NAME="mnist_programs",
 
     # Initialize WandB
     if WANDB_LOGGING:
-        wandb.init(
+        curr_run = wandb.init(
             project="gene_programs",
             entity="sinag",
             name=RUN_NAME
         )
-        wandb.config = {
-            "learning_rate": LEARNING_RATE,
-            "weight_decay": WEIGHT_DECAY,
-            "epochs": N_EPOCHS
-        }
+        # wandb.config = {
+        #     "learning_rate": LEARNING_RATE,
+        #     "weight_decay": WEIGHT_DECAY,
+        #     "epochs": N_EPOCHS
+        # }
 
-        wandb.watch(model, log="all", log_freq=1)
+        # wandb.watch(model, log="all", log_freq=1)
 
 
     for epoch in tqdm(range(N_EPOCHS)):
@@ -157,8 +157,8 @@ RUN_NAME="mnist_programs",
                 "AUC (program scores vs labels)": avg_auc,
                 "Accuracy (top program vs labels)": avg_acc
             }, step=epoch)
-
-    wandb.finish()
+    if WANDB_LOGGING:
+        curr_run.finish()
     model.eval()
     program_scores = model(torch.from_numpy(X).to(device))
     reconst_all = torch.matmul(program_scores, prog_def_tensor)
@@ -199,7 +199,7 @@ if __name__=="__main__":
     WANDB_LOGGING = True,
     LEARNING_RATE = 0.0005,
     WEIGHT_DECAY = 1e-5,
-    N_EPOCHS = 100,
+    N_EPOCHS = 4,
     BATCH_SIZE = 100,
     OUTPUT_PREFIX = "./gene_program_runs",
     RUN_NAME = run_name,
@@ -219,7 +219,7 @@ if __name__=="__main__":
     WANDB_LOGGING = True,
     LEARNING_RATE = 0.0005,
     WEIGHT_DECAY = 1e-5,
-    N_EPOCHS = 30,
+    N_EPOCHS = 10,
     BATCH_SIZE = 100,
     OUTPUT_PREFIX = "./gene_program_runs",
     RUN_NAME = run_name,
